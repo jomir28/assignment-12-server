@@ -46,6 +46,11 @@ async function run() {
             res.send(result)
         })
 
+        // get user info by email from db:
+        app.get('/user/:email', async (req, res) => {
+           
+        })
+
 
 
 
