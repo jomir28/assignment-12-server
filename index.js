@@ -26,6 +26,7 @@ async function run() {
     try {
 
         const userCollection = client.db('microTasking').collection('users')
+        const taskCollection = client.db('microTasking').collection('taskCollection')
 
         // save a user data in db
         app.put('/user', async (req, res) => {
@@ -33,9 +34,9 @@ async function run() {
             const query = { email: user?.email }
             // check if user already exists in db
             const isExists = await userCollection.findOne(query)
-            if(isExists) return res.send({message:'user already exists'})
+            if (isExists) return res.send({ message: 'user already exists' })
             const options = { upsert: true }
-            
+
             const updateDoc = {
                 $set: {
                     ...user,
@@ -53,6 +54,14 @@ async function run() {
             const email = req.params.email;
             const result = await userCollection.findOne({ email })
             res.send(result)
+        })
+
+        //task creator
+
+        // add task
+        app.post('/add-task', async (req, res) => {
+            const task = req.body;
+
         })
 
 
