@@ -72,14 +72,19 @@ async function run() {
 
             app.patch('/update-coin/:email', async (req, res) => {
                 const email = req.params.email;
-                console.log(email);
+               
                 const query = { email: email }
-                console.log(query);
+                
                 const value = req.body
                 console.log(value.value);
                 const decrease = parseFloat(value.value)
 
-                
+                const updateDoc = {
+                    $inc: { coins: -decrease }  
+                };
+
+                const result = await userCollection.updateOne(query, updateDoc);
+                res.send(result)
             })
 
 
