@@ -159,6 +159,14 @@ async function run() {
 
 
         // submission collection:
+
+        app.get('/work-submission/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { worker_email: email }
+            const result = await submissionCollection.find(query).toArray()
+            res.send(result)
+            
+        })
         
         app.post('/worker-submission', async (req, res) => {
             const submissionData = req.body;
