@@ -77,13 +77,25 @@ async function run() {
             res.send(result)
         })
 
+       
+
+        // get single task by id:
+        app.get('/my-task/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await taskCollection.findOne(query)
+            res.send(result)
+        })
+        
+        // delete single task by id:
         app.delete('/all-task/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
             const result = await taskCollection.deleteOne(query)
             res.send(result)
-            
+
         })
+
 
         // decrease user coin:
 
