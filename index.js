@@ -70,7 +70,10 @@ async function run() {
         app.get('/all-task/:email', async (req, res) => {
             const email = req.params.email;
             const query = { 'user.email': email }
-            const result = await taskCollection.find(query).toArray()
+            const options = {
+                sort: { 'user.post_time': -1 }  // -1 for descending order
+            };
+            const result = await taskCollection.find(query,options).toArray()
             res.send(result)
         })
 
