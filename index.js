@@ -10,7 +10,7 @@ app.use(express.json())
 
 // mongodb
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASSWORD}@cluster0.vq4rqer.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -77,9 +77,17 @@ async function run() {
             res.send(result)
         })
 
+        app.delete('/all-task/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await taskCollection.deleteOne(query)
+            res.send(result)
+            
+        })
+
         // decrease user coin:
 
-            app.patch('/update-coin/:email', async (req, res) => {
+            app.patch('/decrease-coin/:email', async (req, res) => {
                 const email = req.params.email;
                
                 const query = { email: email }
@@ -90,6 +98,23 @@ async function run() {
 
                 const updateDoc = {
                     $inc: { coins: -decrease }  
+                };
+
+                const result = await userCollection.updateOne(query, updateDoc);
+                res.send(result)
+            })
+        // increase user coin:
+
+            app.patch('/increase-coin/:email', async (req, res) => {
+                const email = req.params.email;
+               
+                const query = { email: email }
+                
+                const value = req.body
+                const increase = parseFloat(value.value)
+
+                const updateDoc = {
+                    $inc: { coins: increase }  
                 };
 
                 const result = await userCollection.updateOne(query, updateDoc);
