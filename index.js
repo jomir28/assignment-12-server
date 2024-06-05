@@ -66,9 +66,15 @@ async function run() {
 
         })
 
-        // decrease user coin:
+        // get all task by user email:
+        app.get('/all-task/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { 'user.email': email }
+            const result = await taskCollection.find(query).toArray()
+            res.send(result)
+        })
 
-       
+        // decrease user coin:
 
             app.patch('/update-coin/:email', async (req, res) => {
                 const email = req.params.email;
