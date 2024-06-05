@@ -160,6 +160,11 @@ async function run() {
 
         // submission collection:
         
+        app.post('/worker-submission', async (req, res) => {
+            const submissionData = req.body;
+            const result = await submissionCollection.insertOne(submissionData)
+            res.send(result)
+        })
 
 
         // Connect the client to the server	(optional starting in v4.7)
