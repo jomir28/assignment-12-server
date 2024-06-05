@@ -59,6 +59,14 @@ async function run() {
         //task creator
 
         // add task
+
+        app.get('/all-task', async (req, res) => {
+            const result = await taskCollection.find({ "task_quantity": { $gt: 0 } }).toArray()
+            res.send(result)
+
+        })
+
+
         app.post('/add-task', async (req, res) => {
             const task = req.body;
             const result = await taskCollection.insertOne(task)
@@ -73,11 +81,11 @@ async function run() {
             const options = {
                 sort: { 'user.post_time': -1 }  // -1 for descending order
             };
-            const result = await taskCollection.find(query,options).toArray()
+            const result = await taskCollection.find(query, options).toArray()
             res.send(result)
         })
 
-       
+
 
         // get single task by id:
         app.get('/my-task/:id', async (req, res) => {
@@ -100,7 +108,7 @@ async function run() {
             const result = await taskCollection.updateOne(query, updateDoc)
             res.send(result)
         })
-        
+
         // delete single task by id:
         app.delete('/all-task/:id', async (req, res) => {
             const id = req.params.id
@@ -113,39 +121,39 @@ async function run() {
 
         // decrease user coin:
 
-            app.patch('/decrease-coin/:email', async (req, res) => {
-                const email = req.params.email;
-               
-                const query = { email: email }
-                
-                const value = req.body
-                console.log(value.value);
-                const decrease = parseFloat(value.value)
+        app.patch('/decrease-coin/:email', async (req, res) => {
+            const email = req.params.email;
 
-                const updateDoc = {
-                    $inc: { coins: -decrease }  
-                };
+            const query = { email: email }
 
-                const result = await userCollection.updateOne(query, updateDoc);
-                res.send(result)
-            })
+            const value = req.body
+            console.log(value.value);
+            const decrease = parseFloat(value.value)
+
+            const updateDoc = {
+                $inc: { coins: -decrease }
+            };
+
+            const result = await userCollection.updateOne(query, updateDoc);
+            res.send(result)
+        })
         // increase user coin:
 
-            app.patch('/increase-coin/:email', async (req, res) => {
-                const email = req.params.email;
-               
-                const query = { email: email }
-                
-                const value = req.body
-                const increase = parseFloat(value.value)
+        app.patch('/increase-coin/:email', async (req, res) => {
+            const email = req.params.email;
 
-                const updateDoc = {
-                    $inc: { coins: increase }  
-                };
+            const query = { email: email }
 
-                const result = await userCollection.updateOne(query, updateDoc);
-                res.send(result)
-            })
+            const value = req.body
+            const increase = parseFloat(value.value)
+
+            const updateDoc = {
+                $inc: { coins: increase }
+            };
+
+            const result = await userCollection.updateOne(query, updateDoc);
+            res.send(result)
+        })
 
 
         // Connect the client to the server	(optional starting in v4.7)
