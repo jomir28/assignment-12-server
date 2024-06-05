@@ -86,6 +86,20 @@ async function run() {
             const result = await taskCollection.findOne(query)
             res.send(result)
         })
+
+        // update single task by id:
+        app.patch('/my-task/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const data = req.body;
+            const updateDoc = {
+                $set: {
+                    ...data
+                }
+            }
+            const result = await taskCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
         
         // delete single task by id:
         app.delete('/all-task/:id', async (req, res) => {
