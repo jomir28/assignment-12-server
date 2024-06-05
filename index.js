@@ -27,6 +27,7 @@ async function run() {
 
         const userCollection = client.db('microTasking').collection('users')
         const taskCollection = client.db('microTasking').collection('taskCollection')
+        const submissionCollection = client.db('microTasking').collection('submissionCollection')
 
         // save a user data in db
         app.put('/user', async (req, res) => {
@@ -154,6 +155,11 @@ async function run() {
             const result = await userCollection.updateOne(query, updateDoc);
             res.send(result)
         })
+
+
+
+        // submission collection:
+        
 
 
         // Connect the client to the server	(optional starting in v4.7)
