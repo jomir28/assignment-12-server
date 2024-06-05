@@ -66,6 +66,22 @@ async function run() {
 
         })
 
+        // decrease user coin:
+
+       
+
+            app.patch('/update-coin/:email', async (req, res) => {
+                const email = req.params.email;
+                console.log(email);
+                const query = { email: email }
+                console.log(query);
+                const value = req.body
+                console.log(value.value);
+                const decrease = parseFloat(value.value)
+
+                
+            })
+
 
         // Connect the client to the server	(optional starting in v4.7)
         // Send a ping to confirm a successful connection
