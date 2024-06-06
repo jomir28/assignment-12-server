@@ -195,7 +195,7 @@ async function run() {
             const query = { worker_email: email }
             const result = await submissionCollection.find(query).toArray()
             res.send(result)
-            
+
         })
 
 
@@ -220,7 +220,7 @@ async function run() {
             const result = await submissionCollection.updateOne(query, updatedDoc)
             res.send(result)
         })
-        
+
         // changed task status "Approve"
         app.patch('/task/approve/:id', async (req, res) => {
             const id = req.params.id;
@@ -234,11 +234,61 @@ async function run() {
             const result = await submissionCollection.updateOne(query, updatedDoc)
             res.send(result)
         })
-        
+
+
+        // update user coin when task creator accept task:
+        app.patch('/update-user-coin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            // console.log(query);
+            const value = req.body;
+            const increase = parseFloat(value.coins)
+            // console.log(increase);
+
+            const updateDoc = {
+                $inc: { coins: increase }
+            };
+            const result = await userCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+
         app.post('/worker-submission', async (req, res) => {
             const submissionData = req.body;
             const result = await submissionCollection.insertOne(submissionData)
             res.send(result)
+        })
+
+
+        // get data for stat [task creator]
+
+        app.get('/task-creator-state/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+
+            const {coins} = await userCollection.findOne(query, {
+                projection: {
+                    _id: 0,
+                    coins: 1
+                }
+            });
+
+            const query2 = {
+                status: 'Pending',
+                creator_email: email
+            };
+            const pendingTask = await submissionCollection.countDocuments(query2)
+
+            const totalPayableAmount = await submissionCollection.find({
+                status: "Approve",
+                creator_email: email
+            }).toArray()
+
+            const total = totalPayableAmount.reduce((accumulator, currentValue) => {
+                return accumulator + currentValue.payable_amount;
+            }, 0);
+
+            res.send({ pendingTask,coins,totalPayableAmount:total })
+
         })
 
 
@@ -259,5 +309,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`12 is running on${port}`);
+    console.log(`12 is running on ${port}`);
 })
