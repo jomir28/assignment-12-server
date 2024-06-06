@@ -50,7 +50,8 @@ async function run() {
 
         //get all user:
         app.get('/users', async (req, res) => {
-            const result = await userCollection.find().toArray()
+            // const result = await userCollection.find().toArray()
+            const result = await userCollection.find({ role: "Worker" }).toArray();
             res.send(result)
         })
 
