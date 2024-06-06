@@ -206,6 +206,20 @@ async function run() {
             const result = await submissionCollection.find(query).toArray();
             res.send(result);
         });
+
+        // changed task status "Reject"
+        app.patch('/task/reject/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const status = req.body;
+            const updatedDoc = {
+                $set: {
+                    ...status
+                }
+            }
+            const result = await submissionCollection.updateOne(query, updatedDoc)
+            res.send(result)
+        })
         
         app.post('/worker-submission', async (req, res) => {
             const submissionData = req.body;
