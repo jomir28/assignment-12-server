@@ -199,13 +199,7 @@ async function run() {
         })
 
 
-        // get for task creator:
-        app.get('/task-submission/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { creator_email: email, status: "Pending" };
-            const result = await submissionCollection.find(query).toArray();
-            res.send(result);
-        });
+        
 
         // changed task status "Reject"
         app.patch('/task/reject/:id', async (req, res) => {
@@ -289,6 +283,23 @@ async function run() {
 
             res.send({ pendingTask,coins,totalPayableAmount:total })
 
+        })
+
+        // get for task creator:
+        app.get('/task-submission/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { creator_email: email, status: "Pending" };
+            const result = await submissionCollection.find(query).toArray();
+            res.send(result);
+        });
+
+
+        // get for worker:
+        app.get('/worker-submission/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { worker_email: email, status: 'Approve' }
+            const result = await submissionCollection.find(query).toArray()
+            res.send(result)
         })
 
 
