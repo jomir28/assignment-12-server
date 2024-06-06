@@ -197,6 +197,15 @@ async function run() {
             res.send(result)
             
         })
+
+
+        // get for task creator:
+        app.get('/task-submission/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { creator_email: email, status: "Pending" };
+            const result = await submissionCollection.find(query).toArray();
+            res.send(result);
+        });
         
         app.post('/worker-submission', async (req, res) => {
             const submissionData = req.body;
