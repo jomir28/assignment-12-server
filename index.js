@@ -92,7 +92,14 @@ async function run() {
         // add task
 
         app.get('/all-task', async (req, res) => {
-            const result = await taskCollection.find({ "task_quantity": { $gt: 0 } }).toArray()
+            const page = parseInt(req.query.page)
+            const size = parseInt(req.query.size)
+            console.log(page,size);
+            const result = await taskCollection
+                .find({ "task_quantity": { $gt: 0 } })
+                .skip(page * size)
+                .limit(size)
+                .toArray()
             res.send(result)
 
         })
@@ -322,6 +329,12 @@ async function run() {
             const query = { worker_email: email, status: 'Approve' }
             const result = await submissionCollection.find(query).toArray()
             res.send(result)
+        })
+
+        
+        app.get('/taskCount', async (req, res) => {
+            const count = await taskCollection.countDocuments()
+            res.send({count})
         })
 
 
