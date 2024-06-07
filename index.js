@@ -285,6 +285,28 @@ async function run() {
 
         })
 
+        app.get('/worker-state/:email', async (req, res) => {
+            const email = req.params.email;
+            const { coins } = await userCollection.findOne({email:email}, {
+                projection: {
+                    _id: 0,
+                    coins: 1
+                }
+            });
+
+            const total_submission = await submissionCollection.countDocuments({ worker_email: email })
+
+            const total_earning = await submissionCollection.find({ worker_email: email, status: 'Approve' }).toArray()
+            const total = total_earning.reduce((accumulator, currentValue) => {
+                return accumulator + currentValue.payable_amount;
+            }, 0);
+
+            res.send({ coins, total_submission ,total} )
+        })
+
+
+
+
         // get for task creator:
         app.get('/task-submission/:email', async (req, res) => {
             const email = req.params.email;
