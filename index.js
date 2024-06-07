@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express()
 const cors = require('cors')
+const jwt = require('jsonwebtoken') //for json webtoken
 require('dotenv').config()
 
 const port = process.env.PORT || 5000;
@@ -29,6 +30,34 @@ async function run() {
         const taskCollection = client.db('microTasking').collection('taskCollection')
         const submissionCollection = client.db('microTasking').collection('submissionCollection')
 
+
+        //jwt related api:
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
+            res.send({ token })
+        })
+
+        //middleware:
+        const verifyToken = (req, res, next) => {
+            // console.log(req.headers.authorization, 'from middleware');
+            if (!req.headers.authorization) {
+                return res.status(401).send({ message: 'unauthorized access ' })
+            }
+            const token = req.headers.authorization.split(' ')[1]
+            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+                if (err) {
+                    return res.status(401).send({ message: 'unauthorized access ' })
+                }
+                req.user = decoded
+                next()
+            })
+
+
+        }
+
+
         // save a user data in db
         app.put('/user', async (req, res) => {
             const user = req.body;
@@ -48,14 +77,15 @@ async function run() {
             res.send(result)
         })
 
-        //get all user:
-        app.get('/users', async (req, res) => {
+        //get all user: for admin
+        app.get('/users', verifyToken, async (req, res) => {
+            // console.log(req.headers);
             // const result = await userCollection.find().toArray()
             const result = await userCollection.find({ role: "Worker" }).toArray();
             res.send(result)
         })
 
-        // delete user:
+        // delete user:for admin
         app.delete('/user/delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
@@ -64,7 +94,7 @@ async function run() {
         })
 
 
-        // update user role:
+        // update user role:for admin
         app.patch('/user/role/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -89,12 +119,13 @@ async function run() {
 
         //task creator
 
-        // add task
 
+
+        // for worker
         app.get('/all-task', async (req, res) => {
             const page = parseInt(req.query.page)
             const size = parseInt(req.query.size)
-            console.log(page,size);
+
             const result = await taskCollection
                 .find({ "task_quantity": { $gt: 0 } })
                 .skip(page * size)
@@ -103,6 +134,7 @@ async function run() {
             res.send(result)
 
         })
+
 
 
         app.post('/add-task', async (req, res) => {
@@ -196,9 +228,13 @@ async function run() {
 
 
         // submission collection:
-
-        app.get('/work-submission/:email', async (req, res) => {
+        //for worker
+        app.get('/work-submission/:email', verifyToken, async (req, res) => {
+            console.log(req.user.email);
             const email = req.params.email;
+            if (email !== req.user.email) {
+                return res.status(403).send({message:'Forbidden Access'})
+            }
             const query = { worker_email: email }
             const result = await submissionCollection.find(query).toArray()
             res.send(result)
@@ -206,7 +242,7 @@ async function run() {
         })
 
 
-        
+
 
         // changed task status "Reject"
         app.patch('/task/reject/:id', async (req, res) => {
@@ -266,7 +302,7 @@ async function run() {
             const email = req.params.email;
             const query = { email: email }
 
-            const {coins} = await userCollection.findOne(query, {
+            const { coins } = await userCollection.findOne(query, {
                 projection: {
                     _id: 0,
                     coins: 1
@@ -288,13 +324,13 @@ async function run() {
                 return accumulator + currentValue.payable_amount;
             }, 0);
 
-            res.send({ pendingTask,coins,totalPayableAmount:total })
+            res.send({ pendingTask, coins, totalPayableAmount: total })
 
         })
 
         app.get('/worker-state/:email', async (req, res) => {
             const email = req.params.email;
-            const { coins } = await userCollection.findOne({email:email}, {
+            const { coins } = await userCollection.findOne({ email: email }, {
                 projection: {
                     _id: 0,
                     coins: 1
@@ -308,7 +344,7 @@ async function run() {
                 return accumulator + currentValue.payable_amount;
             }, 0);
 
-            res.send({ coins, total_submission ,total} )
+            res.send({ coins, total_submission, total })
         })
 
 
@@ -324,17 +360,20 @@ async function run() {
 
 
         // get for worker:
-        app.get('/worker-submission/:email', async (req, res) => {
+        app.get('/worker-submission/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
+            if (email !== req.user.email) {
+                return res.status(403).send({ message: 'Forbidden Access' })
+            }
             const query = { worker_email: email, status: 'Approve' }
             const result = await submissionCollection.find(query).toArray()
             res.send(result)
         })
 
-        
+
         app.get('/taskCount', async (req, res) => {
             const count = await taskCollection.countDocuments()
-            res.send({count})
+            res.send({ count })
         })
 
 
