@@ -233,7 +233,7 @@ async function run() {
             console.log(req.user.email);
             const email = req.params.email;
             if (email !== req.user.email) {
-                return res.status(403).send({message:'Forbidden Access'})
+                return res.status(403).send({ message: 'Forbidden Access' })
             }
             const query = { worker_email: email }
             const result = await submissionCollection.find(query).toArray()
@@ -375,6 +375,18 @@ async function run() {
             const count = await taskCollection.countDocuments()
             res.send({ count })
         })
+
+
+        // for home section 
+        app.get('/users-coin', async (req, res) => {
+            const result = await userCollection.find().sort({ coins: -1 })
+                .limit(6).toArray()
+            res.send(result)
+        })
+
+
+
+
 
 
         // Connect the client to the server	(optional starting in v4.7)
