@@ -135,6 +135,20 @@ async function run() {
 
         })
 
+        // for admin 
+        app.get('/admin-task', async (req, res) => {
+            const result = await taskCollection.find().toArray();
+            res.send(result)
+        })
+
+        // for admin
+        app.delete('/admin-task-delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await taskCollection.deleteOne(query)
+            res.send(result)
+        })
+
 
 
         app.post('/add-task', async (req, res) => {
@@ -376,6 +390,7 @@ async function run() {
             res.send({ count })
         })
 
+        
 
         // for home section 
         app.get('/users-coin', async (req, res) => {
