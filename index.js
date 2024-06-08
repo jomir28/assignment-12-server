@@ -29,6 +29,7 @@ async function run() {
         const userCollection = client.db('microTasking').collection('users')
         const taskCollection = client.db('microTasking').collection('taskCollection')
         const submissionCollection = client.db('microTasking').collection('submissionCollection')
+        const withdrawCollection = client.db('microTasking').collection('withdrawCollection')
 
 
         //jwt related api:
@@ -398,6 +399,10 @@ async function run() {
                 .limit(6).toArray()
             res.send(result)
         })
+
+
+        // save withdraw for worker in withdrawCollection
+
 
 
 
