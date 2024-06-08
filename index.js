@@ -99,8 +99,11 @@ async function run() {
 
 
         // update user role:for admin
-        app.patch('/user/role/:email', async (req, res) => {
+        app.patch('/user/role/:email',verifyToken, async (req, res) => {
             const email = req.params.email;
+            if (email !== req.user.email) {
+                return res.status(401).send({message:'Unauthorized Access'})
+            }
             const user = req.body;
             const query = { email: email }
             const updatedDoc = {
@@ -114,14 +117,14 @@ async function run() {
 
 
 
-        // get user info by email from db:
+        // get user info by email from db:for custom useUserHook
         app.get('/user/:email', async (req, res) => {
             const email = req.params.email;
             const result = await userCollection.findOne({ email })
             res.send(result)
         })
 
-        //task creator
+    
 
 
 
@@ -140,13 +143,13 @@ async function run() {
         })
 
         // for admin 
-        app.get('/admin-task', async (req, res) => {
+        app.get('/admin-task',verifyToken, async (req, res) => {
             const result = await taskCollection.find().toArray();
             res.send(result)
         })
 
         // for admin
-        app.delete('/admin-task-delete/:id', async (req, res) => {
+        app.delete('/admin-task-delete/:id',verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await taskCollection.deleteOne(query)
@@ -155,6 +158,7 @@ async function run() {
 
 
 
+        //for task creator:
         app.post('/add-task', async (req, res) => {
             const task = req.body;
             const result = await taskCollection.insertOne(task)
@@ -162,8 +166,8 @@ async function run() {
 
         })
 
-        // get all task by user email:
-        app.get('/all-task/:email', async (req, res) => {
+        // get all task by user email:for task creator to get her task
+        app.get('/all-task/:email',verifyToken, async (req, res) => {
             const email = req.params.email;
             const query = { 'user.email': email }
             const options = {
@@ -183,7 +187,7 @@ async function run() {
             res.send(result)
         })
 
-        // update single task by id:
+        // update single task by id:task creator
         app.patch('/my-task/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
@@ -197,7 +201,7 @@ async function run() {
             res.send(result)
         })
 
-        // delete single task by id:
+        // delete single task by id: for task creator
         app.delete('/all-task/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
@@ -334,7 +338,7 @@ async function run() {
             const pendingTask = await submissionCollection.countDocuments(query2)
 
             const paymentPaid = await paymentConfirm.find(query).toArray()
-            console.log(paymentPaid);
+            // console.log(paymentPaid);
 
 
             // const totalPayableAmount = await submissionCollection.find({
@@ -421,7 +425,7 @@ async function run() {
         })
 
         // for admin
-        app.get('/admin-home-request', async (req, res) => {
+        app.get('/admin-home-request',verifyToken, async (req, res) => {
             const result = await withdrawCollection.find().toArray()
             res.send(result)
         })
@@ -452,7 +456,7 @@ async function run() {
         // ---------------------
         // Everything for task creator payment:
 
-        app.get('/payment-offer', async (req, res) => {
+        app.get('/payment-offer',verifyToken, async (req, res) => {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
@@ -507,7 +511,7 @@ async function run() {
 
 
         // for task creator show all success payment of her
-        app.get('/all-success-payment/:email', async (req, res) => {
+        app.get('/all-success-payment/:email',verifyToken, async (req, res) => {
             const email = req.params.email;
             const query = { email: email }
             const options = {
@@ -534,13 +538,13 @@ async function run() {
             }, 0)
 
             const paymentPaid = await paymentConfirm.find().toArray()
-            console.log(paymentPaid)
+            // console.log(paymentPaid)
 
             const totalPay = paymentPaid.reduce((acc, cr) => {
                 return acc + cr.coins
             }, 0)
 
-            console.log(paymentPaid);
+            // console.log(paymentPaid);
 
             res.send({ totalUser, totalCoin, totalPay })
         })
