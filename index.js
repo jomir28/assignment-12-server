@@ -391,7 +391,7 @@ async function run() {
             res.send({ count })
         })
 
-        
+
 
         // for home section 
         app.get('/users-coin', async (req, res) => {
@@ -402,7 +402,17 @@ async function run() {
 
 
         // save withdraw for worker in withdrawCollection
+        app.post('/withdraw-coin', async (req, res) => {
+            const data = req.body;
+            const result = await withdrawCollection.insertOne(data)
+            res.send(result)
+        })
 
+        // for admin
+        app.get('/admin-home-request', async (req, res) => {
+            const result = await withdrawCollection.find().toArray()
+            res.send(result)
+        })
 
 
 
