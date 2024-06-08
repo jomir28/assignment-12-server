@@ -414,6 +414,30 @@ async function run() {
             res.send(result)
         })
 
+        // make it for admin to approve payment
+        app.patch('/user-coin-deducted/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = {email:email}
+            const data = req.body;
+            const increase = parseInt(data.withdraw)
+            const updateDoc = {
+                    $inc: { coins: -increase }
+            };
+            const result = await userCollection.updateOne(query, updateDoc)
+            res.send(result)
+            
+
+        })
+
+        // make it for admin for after approve payment delete specific data in withdrawCollection
+        app.delete('/withdraw-delete/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await withdrawCollection.deleteOne(query)
+            res.send(result)
+        })
+        
+    
 
 
 
