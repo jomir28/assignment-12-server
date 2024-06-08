@@ -333,16 +333,25 @@ async function run() {
             };
             const pendingTask = await submissionCollection.countDocuments(query2)
 
-            const totalPayableAmount = await submissionCollection.find({
-                status: "Approve",
-                creator_email: email
-            }).toArray()
+            const paymentPaid = await paymentConfirm.find(query).toArray()
+            console.log(paymentPaid);
 
-            const total = totalPayableAmount.reduce((accumulator, currentValue) => {
-                return accumulator + currentValue.payable_amount;
-            }, 0);
 
-            res.send({ pendingTask, coins, totalPayableAmount: total })
+            // const totalPayableAmount = await submissionCollection.find({
+            //     status: "Approve",
+            //     creator_email: email
+            //     }).toArray()
+            // console.log(totalPayableAmount);
+
+            const total = paymentPaid.reduce((acc, cr) => {
+                return acc + cr.dollars
+            },0)
+
+            // const total = totalPayableAmount.reduce((accumulator, currentValue) => {
+            //     return accumulator + currentValue.payable_amount;
+            // }, 0);
+
+            res.send({ pendingTask, coins,total })
 
         })
 
@@ -420,15 +429,15 @@ async function run() {
         // make it for admin to approve payment
         app.patch('/user-coin-deducted/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email:email}
+            const query = { email: email }
             const data = req.body;
             const increase = parseInt(data.withdraw)
             const updateDoc = {
-                    $inc: { coins: -increase }
+                $inc: { coins: -increase }
             };
             const result = await userCollection.updateOne(query, updateDoc)
             res.send(result)
-            
+
 
         })
 
@@ -439,7 +448,7 @@ async function run() {
             const result = await withdrawCollection.deleteOne(query)
             res.send(result)
         })
-        
+
         // ---------------------
         // Everything for task creator payment:
 
@@ -490,25 +499,23 @@ async function run() {
             const data = req.body
             const increase = parseInt(data.coins)
             const updateDoc = {
-               $inc:{coins:increase}
+                $inc: { coins: increase }
             }
             const result = await userCollection.updateOne(query, updateDoc)
             res.send(result)
         })
 
-        // app.patch('/user-coin-deducted/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const query = { email: email }
-        //     const data = req.body;
-        //     const increase = parseInt(data.withdraw)
-        //     const updateDoc = {
-        //         $inc: { coins: -increase }
-        //     };
-        //     const result = await userCollection.updateOne(query, updateDoc)
-        //     res.send(result)
 
-
-        // })
+        // for task creator show all success payment of her
+        app.get('/all-success-payment/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const options = {
+                sort: { time: -1 } // Sort by `time` field in descending order
+            };
+            const result = await paymentConfirm.find(query, options).toArray()
+            res.send(result)
+        })
 
 
 
@@ -526,7 +533,7 @@ async function run() {
 
 
         // -------------
-    
+
 
 
 
