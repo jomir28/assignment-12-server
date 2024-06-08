@@ -519,20 +519,31 @@ async function run() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
         // -------------
+
+
+        // for admin
+
+        app.get('/admin/state', async (req, res) => {
+            const totalUser = await userCollection.countDocuments()
+
+            const result2 = await userCollection.find().toArray()
+
+            const totalCoin = result2.reduce((acc, cr) => {
+                return acc + cr.coins
+            }, 0)
+
+            const paymentPaid = await paymentConfirm.find().toArray()
+            console.log(paymentPaid)
+
+            const totalPay = paymentPaid.reduce((acc, cr) => {
+                return acc + cr.coins
+            }, 0)
+
+            console.log(paymentPaid);
+
+            res.send({ totalUser, totalCoin, totalPay })
+        })
 
 
 
