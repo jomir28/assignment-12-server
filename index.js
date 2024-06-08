@@ -32,6 +32,7 @@ async function run() {
         const submissionCollection = client.db('microTasking').collection('submissionCollection')
         const withdrawCollection = client.db('microTasking').collection('withdrawCollection')
         const paymentCollection = client.db('microTasking').collection('paymentCollection')
+        const paymentConfirm = client.db('microTasking').collection('paymentConfirm')
 
 
         //jwt related api:
@@ -475,6 +476,13 @@ async function run() {
             res.send({ clientSecret: client_secret })
         })
 
+
+        // working on confirm payment store in database:
+        app.post('/confirm-payment', async (req, res) => {
+            const confirmData = req.body;
+            const result = await paymentConfirm.insertOne(confirmData)
+            res.send(result)
+        })
 
 
 
