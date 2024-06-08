@@ -484,7 +484,31 @@ async function run() {
             res.send(result)
         })
 
+        app.patch('/payment-success/coin-update/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const data = req.body
+            const increase = parseInt(data.coins)
+            const updateDoc = {
+               $inc:{coins:increase}
+            }
+            const result = await userCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
 
+        // app.patch('/user-coin-deducted/:email', async (req, res) => {
+        //     const email = req.params.email;
+        //     const query = { email: email }
+        //     const data = req.body;
+        //     const increase = parseInt(data.withdraw)
+        //     const updateDoc = {
+        //         $inc: { coins: -increase }
+        //     };
+        //     const result = await userCollection.updateOne(query, updateDoc)
+        //     res.send(result)
+
+
+        // })
 
 
 
