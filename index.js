@@ -3,6 +3,7 @@ const app = express()
 const cors = require('cors')
 const jwt = require('jsonwebtoken') //for json webtoken
 require('dotenv').config()
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 const port = process.env.PORT || 5000;
 app.use(cors())
@@ -30,6 +31,7 @@ async function run() {
         const taskCollection = client.db('microTasking').collection('taskCollection')
         const submissionCollection = client.db('microTasking').collection('submissionCollection')
         const withdrawCollection = client.db('microTasking').collection('withdrawCollection')
+        const paymentCollection = client.db('microTasking').collection('paymentCollection')
 
 
         //jwt related api:
@@ -437,6 +439,61 @@ async function run() {
             res.send(result)
         })
         
+        // ---------------------
+        // Everything for task creator payment:
+
+        app.get('/payment-offer', async (req, res) => {
+            const result = await paymentCollection.find().toArray()
+            res.send(result)
+        })
+
+        app.get('/payment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await paymentCollection.findOne(query)
+            res.send(result)
+        })
+
+        //create-payment-intent
+
+        app.post('/create-payment-intent', verifyToken, async (req, res) => {
+            const price = req.body.price;
+            const priceInCent = parseFloat(price) * 100;
+            // console.log(priceInCent);
+
+            if (!price || priceInCent < 1) return
+            //generate client secret
+            const { client_secret } = await stripe.paymentIntents.create({
+                amount: priceInCent,
+                currency: "usd",
+                // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+                automatic_payment_methods: {
+                    enabled: true,
+                },
+            })
+            //send client secret response
+            res.send({ clientSecret: client_secret })
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // -------------
     
 
 
