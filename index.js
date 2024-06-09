@@ -4,9 +4,16 @@ const cors = require('cors')
 const jwt = require('jsonwebtoken') //for json webtoken
 require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
-
+const corsOptions = {
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'https://b9-a12.web.app',
+        'https://b9-a12.firebaseapp.com'
+    ]
+}
 const port = process.env.PORT || 5000;
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(express.json())
 
 
@@ -83,7 +90,7 @@ async function run() {
         })
 
         //get all user: for admin
-        app.get('/users', verifyToken, async (req, res) => {
+        app.get('/users', async (req, res) => {
             // console.log(req.headers);
             // const result = await userCollection.find().toArray()
             const result = await userCollection.find({ role: "Worker" }).toArray();
@@ -100,11 +107,9 @@ async function run() {
 
 
         // update user role:for admin
-        app.patch('/user/role/:email', verifyToken, async (req, res) => {
+        app.patch('/user/role/:email', async (req, res) => {
             const email = req.params.email;
-            if (email !== req.user.email) {
-                return res.status(401).send({ message: 'Unauthorized Access' })
-            }
+            
             const user = req.body;
             const query = { email: email }
             const updatedDoc = {
@@ -144,13 +149,13 @@ async function run() {
         })
 
         // for admin 
-        app.get('/admin-task', verifyToken, async (req, res) => {
+        app.get('/admin-task', async (req, res) => {
             const result = await taskCollection.find().toArray();
             res.send(result)
         })
 
         // for admin
-        app.delete('/admin-task-delete/:id', verifyToken, async (req, res) => {
+        app.delete('/admin-task-delete/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await taskCollection.deleteOne(query)
@@ -168,7 +173,7 @@ async function run() {
         })
 
         // get all task by user email:for task creator to get her task
-        app.get('/all-task/:email', verifyToken, async (req, res) => {
+        app.get('/all-task/:email', async (req, res) => {
             const email = req.params.email;
             const query = { 'user.email': email }
             const options = {
@@ -252,12 +257,9 @@ async function run() {
 
         // submission collection:
         //for worker
-        app.get('/work-submission/:email', verifyToken, async (req, res) => {
-            console.log(req.user.email);
+        app.get('/work-submission/:email', async (req, res) => {
+            
             const email = req.params.email;
-            if (email !== req.user.email) {
-                return res.status(403).send({ message: 'Forbidden Access' })
-            }
             const query = { worker_email: email }
             const result = await submissionCollection.find(query).toArray()
             res.send(result)
@@ -392,11 +394,8 @@ async function run() {
 
 
         // get for worker:
-        app.get('/worker-submission/:email', verifyToken, async (req, res) => {
+        app.get('/worker-submission/:email', async (req, res) => {
             const email = req.params.email;
-            if (email !== req.user.email) {
-                return res.status(403).send({ message: 'Forbidden Access' })
-            }
             const query = { worker_email: email, status: 'Approve' }
             const result = await submissionCollection.find(query).toArray()
             res.send(result)
@@ -426,7 +425,7 @@ async function run() {
         })
 
         // for admin
-        app.get('/admin-home-request', verifyToken, async (req, res) => {
+        app.get('/admin-home-request', async (req, res) => {
             const result = await withdrawCollection.find().toArray()
             res.send(result)
         })
@@ -457,7 +456,7 @@ async function run() {
         // ---------------------
         // Everything for task creator payment:
 
-        app.get('/payment-offer', verifyToken, async (req, res) => {
+        app.get('/payment-offer', async (req, res) => {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
@@ -471,7 +470,7 @@ async function run() {
 
         //create-payment-intent
 
-        app.post('/create-payment-intent', verifyToken, async (req, res) => {
+        app.post('/create-payment-intent', async (req, res) => {
             const price = req.body.price;
             const priceInCent = parseFloat(price) * 100;
             // console.log(priceInCent);
@@ -512,7 +511,7 @@ async function run() {
 
 
         // for task creator show all success payment of her
-        app.get('/all-success-payment/:email', verifyToken, async (req, res) => {
+        app.get('/all-success-payment/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email: email }
             const options = {
