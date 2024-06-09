@@ -33,6 +33,7 @@ async function run() {
         const withdrawCollection = client.db('microTasking').collection('withdrawCollection')
         const paymentCollection = client.db('microTasking').collection('paymentCollection')
         const paymentConfirm = client.db('microTasking').collection('paymentConfirm')
+        const notificationCollection = client.db('microTasking').collection('notification')
 
 
         //jwt related api:
@@ -99,10 +100,10 @@ async function run() {
 
 
         // update user role:for admin
-        app.patch('/user/role/:email',verifyToken, async (req, res) => {
+        app.patch('/user/role/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             if (email !== req.user.email) {
-                return res.status(401).send({message:'Unauthorized Access'})
+                return res.status(401).send({ message: 'Unauthorized Access' })
             }
             const user = req.body;
             const query = { email: email }
@@ -124,7 +125,7 @@ async function run() {
             res.send(result)
         })
 
-    
+
 
 
 
@@ -143,13 +144,13 @@ async function run() {
         })
 
         // for admin 
-        app.get('/admin-task',verifyToken, async (req, res) => {
+        app.get('/admin-task', verifyToken, async (req, res) => {
             const result = await taskCollection.find().toArray();
             res.send(result)
         })
 
         // for admin
-        app.delete('/admin-task-delete/:id',verifyToken, async (req, res) => {
+        app.delete('/admin-task-delete/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await taskCollection.deleteOne(query)
@@ -167,7 +168,7 @@ async function run() {
         })
 
         // get all task by user email:for task creator to get her task
-        app.get('/all-task/:email',verifyToken, async (req, res) => {
+        app.get('/all-task/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             const query = { 'user.email': email }
             const options = {
@@ -349,13 +350,13 @@ async function run() {
 
             const total = paymentPaid.reduce((acc, cr) => {
                 return acc + cr.dollars
-            },0)
+            }, 0)
 
             // const total = totalPayableAmount.reduce((accumulator, currentValue) => {
             //     return accumulator + currentValue.payable_amount;
             // }, 0);
 
-            res.send({ pendingTask, coins,total })
+            res.send({ pendingTask, coins, total })
 
         })
 
@@ -425,7 +426,7 @@ async function run() {
         })
 
         // for admin
-        app.get('/admin-home-request',verifyToken, async (req, res) => {
+        app.get('/admin-home-request', verifyToken, async (req, res) => {
             const result = await withdrawCollection.find().toArray()
             res.send(result)
         })
@@ -456,7 +457,7 @@ async function run() {
         // ---------------------
         // Everything for task creator payment:
 
-        app.get('/payment-offer',verifyToken, async (req, res) => {
+        app.get('/payment-offer', verifyToken, async (req, res) => {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
@@ -511,7 +512,7 @@ async function run() {
 
 
         // for task creator show all success payment of her
-        app.get('/all-success-payment/:email',verifyToken, async (req, res) => {
+        app.get('/all-success-payment/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             const query = { email: email }
             const options = {
@@ -550,6 +551,77 @@ async function run() {
         })
 
 
+
+        // post by task creator for worker notification : task approved
+        app.post('/notification', async (req, res) => {
+            const notify = req.body;
+            const result = await notificationCollection.insertOne(notify)
+            res.send(result)
+        })
+
+        // app.get('/notification/:email', async (req, res) => {
+        //     const email = req.params.email;
+        //     const query = { toEmail: email };
+
+        //     // Aggregation with custom sort order
+        //     const result = await notificationCollection.aggregate([
+        //         { $match: query },
+        //         {
+        //             $addFields: {
+        //                 sortOrder: {
+        //                     $cond: { if: { $eq: ["$status", "unread"] }, then: 1, else: 2 }
+        //                 }
+        //             }
+        //         },
+        //         { $sort: { sortOrder: 1, time: -1 } },
+        //         { $project: { sortOrder: 0 } } // Exclude sortOrder from the final output
+        //     ]).toArray();
+
+        //     res.send(result);
+        // });
+        app.get('/notification/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { toEmail: email };
+
+            // Aggregation with custom sort order
+            const result = await notificationCollection.aggregate([
+                { $match: query },
+                {
+                    $addFields: {
+                        sortOrder: {
+                            $cond: { if: { $eq: ["$status", "unread"] }, then: 1, else: 2 }
+                        }
+                    }
+                },
+                { $sort: { sortOrder: 1, time: -1 } },
+                { $project: { sortOrder: 0 } } // Exclude sortOrder from the final output
+            ]).toArray();
+
+            res.send(result);
+        });
+
+
+
+        app.patch('/notification/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const status = req.body;
+            const updateDoc = {
+                $set: {
+                    ...status
+                }
+            }
+            const result = await notificationCollection.updateOne(query, updateDoc)
+            res.send(result)
+        })
+
+
+        app.get('/notification-count/new/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { toEmail: email,status:'unread' }
+            const count = await notificationCollection.countDocuments(query)
+            res.send({count})
+        })
 
 
 
