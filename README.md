@@ -1,5 +1,4 @@
-# Project Name 
-Micro Earn
+# Project Name
 
 ## Introduction
 
