@@ -4,15 +4,14 @@ const cors = require('cors')
 const jwt = require('jsonwebtoken') //for json webtoken
 require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const port = process.env.PORT || 5000;
 const corsOptions = {
     origin: [
         'http://localhost:5173',
         'http://localhost:5174',
-        'https://b9-a12.web.app',
-        'https://b9-a12.firebaseapp.com'
     ]
 }
-const port = process.env.PORT || 5000;
+
 app.use(cors(corsOptions))
 app.use(express.json())
 
@@ -34,20 +33,20 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
 
-        const userCollection = client.db('microTasking').collection('users')
-        const taskCollection = client.db('microTasking').collection('taskCollection')
-        const submissionCollection = client.db('microTasking').collection('submissionCollection')
-        const withdrawCollection = client.db('microTasking').collection('withdrawCollection')
-        const paymentCollection = client.db('microTasking').collection('paymentCollection')
-        const paymentConfirm = client.db('microTasking').collection('paymentConfirm')
-        const notificationCollection = client.db('microTasking').collection('notification')
+        const userCollection = client.db('microEarning').collection('users')
+        const taskCollection = client.db('microEarning').collection('taskCollection')
+        const submissionCollection = client.db('microEarning').collection('submissionCollection')
+        const withdrawCollection = client.db('microEarning').collection('withdrawCollection')
+        const paymentCollection = client.db('microEarning').collection('paymentCollection')
+        const paymentConfirm = client.db('microEarning').collection('paymentConfirm')
+        const notificationCollection = client.db('microEarning ').collection('notification')
 
 
         //jwt related api:
         app.post('/jwt', async (req, res) => {
             const user = req.body;
 
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '365d' });
             res.send({ token })
         })
 
